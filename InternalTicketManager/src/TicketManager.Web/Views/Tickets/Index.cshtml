@@ -1,0 +1,39 @@
+@model IEnumerable<Ticket>
+
+@{
+    ViewData["Title"] = "Tickets";
+}
+
+<section class="page-heading">
+    <div>
+        <h1>Tickets</h1>
+        <p>Pedidos internos atualmente em acompanhamento.</p>
+    </div>
+    <a class="button" asp-action="Create">Criar ticket</a>
+</section>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Prioridade</th>
+            <th>Estado</th>
+            <th>Criado em</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ticket in Model)
+        {
+            <tr>
+                <td>@ticket.Title</td>
+                <td><span class="badge priority-@ticket.Priority.ToString().ToLowerInvariant()">@ticket.Priority.ToDisplayName()</span></td>
+                <td><span class="badge status-@ticket.Status.ToString().ToLowerInvariant()">@ticket.Status.ToDisplayName()</span></td>
+                <td>@ticket.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                <td class="actions">
+                    <a asp-action="Details" asp-route-id="@ticket.Id">Detalhe</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

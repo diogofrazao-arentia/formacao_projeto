@@ -1,0 +1,24 @@
+@model Ticket
+
+@{
+    ViewData["Title"] = "Editar estado";
+}
+
+<section class="page-heading">
+    <div>
+        <h1>Editar estado</h1>
+        <p>@Model.Title</p>
+    </div>
+</section>
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="form">
+    <div class="field">
+        <label for="status">Estado</label>
+        <select id="status" name="status" asp-items="ViewBag.StatusOptions"></select>
+    </div>
+
+    <div class="form-actions">
+        <button class="button" type="submit">Guardar</button>
+        <a class="button button-secondary" asp-action="Details" asp-route-id="@Model.Id">Cancelar</a>
+    </div>
+</form>

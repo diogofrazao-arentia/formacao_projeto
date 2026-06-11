@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketManager.Web", "src\TicketManager.Web\TicketManager.Web.csproj", "{D9D13B70-4102-4F3C-94B0-56BBE8726518}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketManager.Web.Tests", "tests\TicketManager.Web.Tests\TicketManager.Web.Tests.csproj", "{A1B4C5D6-E7F8-4A9B-8C7D-6E5F4A3B2C1D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D9D13B70-4102-4F3C-94B0-56BBE8726518}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9D13B70-4102-4F3C-94B0-56BBE8726518}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9D13B70-4102-4F3C-94B0-56BBE8726518}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9D13B70-4102-4F3C-94B0-56BBE8726518}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B4C5D6-E7F8-4A9B-8C7D-6E5F4A3B2C1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B4C5D6-E7F8-4A9B-8C7D-6E5F4A3B2C1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B4C5D6-E7F8-4A9B-8C7D-6E5F4A3B2C1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B4C5D6-E7F8-4A9B-8C7D-6E5F4A3B2C1D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

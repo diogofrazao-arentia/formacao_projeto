@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: Your_password123
+        ports:
+          - 1433:1433
+
+    defaults:
+      run:
+        working-directory: InternalTicketManager
+
+    env:
+      ConnectionStrings__TestConnection: Server=localhost,1433;Database=master;User Id=sa;Password=Your_password123;Encrypt=False;TrustServerCertificate=True
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore InternalTicketManager.sln
+
+      - name: Build
+        run: dotnet build InternalTicketManager.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test InternalTicketManager.sln --configuration Release --no-build --logger "trx;LogFileName=test-results.trx"

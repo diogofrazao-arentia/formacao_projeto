@@ -1,0 +1,39 @@
+@model Ticket
+
+@{
+    ViewData["Title"] = "Criar ticket";
+}
+
+<section class="page-heading">
+    <div>
+        <h1>Criar ticket</h1>
+        <p>Registar um novo pedido interno.</p>
+    </div>
+</section>
+
+<form asp-action="Create" method="post" class="form">
+    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+    <div class="field">
+        <label asp-for="Title"></label>
+        <input asp-for="Title" />
+        <span asp-validation-for="Title" class="validation-message"></span>
+    </div>
+
+    <div class="field">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" rows="6"></textarea>
+        <span asp-validation-for="Description" class="validation-message"></span>
+    </div>
+
+    <div class="field">
+        <label asp-for="Priority"></label>
+        <select asp-for="Priority" asp-items="ViewBag.PriorityOptions"></select>
+        <span asp-validation-for="Priority" class="validation-message"></span>
+    </div>
+
+    <div class="form-actions">
+        <button class="button" type="submit">Criar</button>
+        <a class="button button-secondary" asp-action="Index">Cancelar</a>
+    </div>
+</form>
