@@ -40,6 +40,40 @@ public sealed class TicketsIntegrationTests : IClassFixture<TicketManagerWebAppl
     }
 
     [Fact]
+    public async Task Index_OrdersTicketsByNewestFirst()
+    {
+        await using var dbContext = CreateDbContext();
+        var oldestTicket = await dbContext.Tickets
+            .OrderBy(ticket => ticket.CreatedAt)
+            .FirstAsync();
+        var newestTicket = await CreateTicketAsync(
+            "Newest ticket should be first",
+            "A recently created ticket should appear before older tickets.",
+            TicketPriority.Medium,
+            TicketStatus.Open,
+            DateTime.UtcNow.AddMinutes(5));
+
+        var response = await client.GetAsync("/Tickets");
+
+        await EnsureSuccessAsync(response);
+        var body = await ReadDecodedBodyAsync(response);
+        Assert.True(
+            body.IndexOf(newestTicket.Title, StringComparison.Ordinal) <
+            body.IndexOf(oldestTicket.Title, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Root_ReturnsTicketsIndex()
+    {
+        var response = await client.GetAsync("/");
+
+        await EnsureSuccessAsync(response);
+        var body = await ReadDecodedBodyAsync(response);
+        Assert.Contains("Pedidos internos atualmente em acompanhamento.", body);
+        Assert.Contains("Criar ticket", body);
+    }
+
+    [Fact]
     public async Task Create_Get_ReturnsSuccess()
     {
         var response = await client.GetAsync("/Tickets/Create");
@@ -72,6 +106,29 @@ public sealed class TicketsIntegrationTests : IClassFixture<TicketManagerWebAppl
     }
 
     [Fact]
+    public async Task Create_Post_WithBoundaryLengthData_CreatesTicket()
+    {
+        var token = await GetAntiforgeryTokenAsync("/Tickets/Create");
+        var title = new string('T', 120);
+        var description = new string('D', 2000);
+
+        var response = await client.PostAsync("/Tickets/Create", FormContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["Title"] = title,
+            ["Description"] = description,
+            ["Priority"] = TicketPriority.Low.ToString()
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+
+        await using var dbContext = CreateDbContext();
+        var ticket = await dbContext.Tickets.SingleAsync(t => t.Title == title);
+        Assert.Equal(description, ticket.Description);
+        Assert.Equal(TicketPriority.Low, ticket.Priority);
+    }
+
+    [Fact]
     public async Task Create_Post_WithInvalidData_ReturnsValidationErrorsAndDoesNotCreateTicket()
     {
         var token = await GetAntiforgeryTokenAsync("/Tickets/Create");
@@ -96,6 +153,47 @@ public sealed class TicketsIntegrationTests : IClassFixture<TicketManagerWebAppl
     }
 
     [Fact]
+    public async Task Create_Post_WithoutAntiforgeryToken_ReturnsBadRequestAndDoesNotCreateTicket()
+    {
+        await using var dbContextBefore = CreateDbContext();
+        var beforeCount = await dbContextBefore.Tickets.CountAsync();
+
+        var response = await client.PostAsync("/Tickets/Create", FormContent(new Dictionary<string, string>
+        {
+            ["Title"] = "No token ticket",
+            ["Description"] = "This request should be rejected before model persistence.",
+            ["Priority"] = TicketPriority.High.ToString()
+        }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        await using var dbContextAfter = CreateDbContext();
+        Assert.Equal(beforeCount, await dbContextAfter.Tickets.CountAsync());
+    }
+
+    [Fact]
+    public async Task Create_Post_WithInvalidPriority_ReturnsValidationErrorsAndDoesNotCreateTicket()
+    {
+        var token = await GetAntiforgeryTokenAsync("/Tickets/Create");
+        await using var dbContextBefore = CreateDbContext();
+        var beforeCount = await dbContextBefore.Tickets.CountAsync();
+
+        var response = await client.PostAsync("/Tickets/Create", FormContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["Title"] = "Invalid priority ticket",
+            ["Description"] = "The priority value does not match the enum.",
+            ["Priority"] = "Critical"
+        }));
+
+        await EnsureSuccessAsync(response);
+
+        await using var dbContextAfter = CreateDbContext();
+        Assert.Equal(beforeCount, await dbContextAfter.Tickets.CountAsync());
+        Assert.False(await dbContextAfter.Tickets.AnyAsync(t => t.Title == "Invalid priority ticket"));
+    }
+
+    [Fact]
     public async Task Details_WithExistingTicket_ReturnsSuccessAndShowsTicket()
     {
         var ticket = await GetSeedTicketAsync();
@@ -112,6 +210,14 @@ public sealed class TicketsIntegrationTests : IClassFixture<TicketManagerWebAppl
     public async Task Details_WithMissingTicket_ReturnsNotFound()
     {
         var response = await client.GetAsync("/Tickets/Details/999999");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Details_WithoutId_ReturnsNotFound()
+    {
+        var response = await client.GetAsync("/Tickets/Details");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -151,6 +257,80 @@ public sealed class TicketsIntegrationTests : IClassFixture<TicketManagerWebAppl
     }
 
     [Fact]
+    public async Task Edit_Post_WithExistingTicket_OnlyUpdatesStatus()
+    {
+        var ticket = await CreateTicketAsync(
+            "Edit preserves immutable fields",
+            "Only the status should change during edit.",
+            TicketPriority.High,
+            TicketStatus.Open,
+            DateTime.UtcNow.AddHours(-1));
+        var token = await GetAntiforgeryTokenAsync($"/Tickets/Edit/{ticket.Id}");
+
+        var response = await client.PostAsync($"/Tickets/Edit/{ticket.Id}", FormContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["status"] = TicketStatus.InProgress.ToString()
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+
+        await using var dbContext = CreateDbContext();
+        var updatedTicket = await dbContext.Tickets.FindAsync(ticket.Id);
+        Assert.NotNull(updatedTicket);
+        Assert.Equal(ticket.Title, updatedTicket.Title);
+        Assert.Equal(ticket.Description, updatedTicket.Description);
+        Assert.Equal(ticket.Priority, updatedTicket.Priority);
+        Assert.Equal(ticket.CreatedAt, updatedTicket.CreatedAt);
+        Assert.Equal(TicketStatus.InProgress, updatedTicket.Status);
+    }
+
+    [Fact]
+    public async Task Edit_Post_WithInvalidStatus_ReturnsValidationErrorsAndDoesNotUpdateTicket()
+    {
+        var ticket = await CreateTicketAsync(
+            "Invalid status is rejected",
+            "The current status should survive an invalid enum value.",
+            TicketPriority.Medium,
+            TicketStatus.InProgress,
+            DateTime.UtcNow.AddHours(-2));
+        var token = await GetAntiforgeryTokenAsync($"/Tickets/Edit/{ticket.Id}");
+
+        var response = await client.PostAsync($"/Tickets/Edit/{ticket.Id}", FormContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["status"] = "Blocked"
+        }));
+
+        await EnsureSuccessAsync(response);
+        var body = await ReadDecodedBodyAsync(response);
+        Assert.Contains(ticket.Title, body);
+
+        await using var dbContext = CreateDbContext();
+        var updatedTicket = await dbContext.Tickets.FindAsync(ticket.Id);
+        Assert.NotNull(updatedTicket);
+        Assert.Equal(TicketStatus.InProgress, updatedTicket.Status);
+    }
+
+    [Fact]
+    public async Task Edit_Post_WithoutAntiforgeryToken_ReturnsBadRequestAndDoesNotUpdateTicket()
+    {
+        var ticket = await GetSeedTicketAsync();
+
+        var response = await client.PostAsync($"/Tickets/Edit/{ticket.Id}", FormContent(new Dictionary<string, string>
+        {
+            ["status"] = TicketStatus.Closed.ToString()
+        }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        await using var dbContext = CreateDbContext();
+        var unchangedTicket = await dbContext.Tickets.FindAsync(ticket.Id);
+        Assert.NotNull(unchangedTicket);
+        Assert.Equal(ticket.Status, unchangedTicket.Status);
+    }
+
+    [Fact]
     public async Task Edit_Post_WithMissingTicket_ReturnsNotFound()
     {
         var ticket = await GetSeedTicketAsync();
@@ -169,6 +349,28 @@ public sealed class TicketsIntegrationTests : IClassFixture<TicketManagerWebAppl
     {
         await using var dbContext = CreateDbContext();
         return await dbContext.Tickets.OrderBy(t => t.Id).FirstAsync();
+    }
+
+    private async Task<Ticket> CreateTicketAsync(
+        string title,
+        string description,
+        TicketPriority priority,
+        TicketStatus status,
+        DateTime createdAt)
+    {
+        await using var dbContext = CreateDbContext();
+        var ticket = new Ticket
+        {
+            Title = title,
+            Description = description,
+            Priority = priority,
+            Status = status,
+            CreatedAt = createdAt
+        };
+
+        dbContext.Tickets.Add(ticket);
+        await dbContext.SaveChangesAsync();
+        return ticket;
     }
 
     private AppDbContext CreateDbContext()

@@ -3,15 +3,29 @@ using TicketManager.Web.Models;
 
 namespace TicketManager.Web.Data;
 
+/// <summary>
+/// Entity Framework database context for the ticket management application.
+/// </summary>
 public class AppDbContext : DbContext
 {
+    /// <summary>
+    /// Creates a database context using the options configured by dependency injection.
+    /// </summary>
+    /// <param name="options">Database provider and connection options.</param>
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
 
+    /// <summary>
+    /// Tickets persisted by the application.
+    /// </summary>
     public DbSet<Ticket> Tickets => Set<Ticket>();
 
+    /// <summary>
+    /// Configures the database mapping and constraints for the domain model.
+    /// </summary>
+    /// <param name="modelBuilder">Builder used to configure EF Core metadata.</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Ticket>(entity =>

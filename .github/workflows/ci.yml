@@ -1,13 +1,16 @@
 name: CI
 
+# A pipeline corre em pushes, pull requests e também pode ser executada manualmente.
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    # Os testes de integração precisam de uma instância de SQL Server disponível.
     services:
       sqlserver:
         image: mcr.microsoft.com/mssql/server:2022-latest
@@ -21,6 +24,7 @@ jobs:
       run:
         working-directory: InternalTicketManager
 
+    # Connection string usada pelos testes para criarem uma base de dados temporária.
     env:
       ConnectionStrings__TestConnection: Server=localhost,1433;Database=master;User Id=sa;Password=Your_password123;Encrypt=False;TrustServerCertificate=True
 
@@ -28,16 +32,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Instala o SDK de .NET 8 usado pela aplicação e pelos testes.
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
+      # Restaura os pacotes NuGet da solução.
       - name: Restore
         run: dotnet restore InternalTicketManager.sln
 
+      # Linter de formatação: garante que o código está formatado segundo as regras do dotnet format.
+      - name: Format check
+        run: dotnet format InternalTicketManager.sln --verify-no-changes --no-restore
+
+      # Type checking e análise estática: compila a solução em Release e falha em warnings.
       - name: Build
         run: dotnet build InternalTicketManager.sln --configuration Release --no-restore
 
+      # Testes automatizados: corre a suite e gera um ficheiro .trx com os resultados.
       - name: Test
         run: dotnet test InternalTicketManager.sln --configuration Release --no-build --logger "trx;LogFileName=test-results.trx"
+
+      - name: Generate code documentation
+        shell: pwsh
+        run: ./docs/generate-docs.ps1 -Configuration Release
+
+      # Confirma que a aplicação consegue ser publicada.
+      - name: Publish
+        run: dotnet publish src/TicketManager.Web/TicketManager.Web.csproj --configuration Release --no-build
+
+      # Guarda os resultados dos testes para consulta no GitHub Actions.
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: InternalTicketManager/**/test-results.trx

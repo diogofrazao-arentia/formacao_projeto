@@ -64,7 +64,66 @@ $env:ConnectionStrings__TestConnection="Server=localhost,1433;Database=master;Us
 dotnet test
 ```
 
+Se não existir SQL Server local, pode ser usada a instância de teste definida em `docker-compose.yml`:
+
+```powershell
+docker compose up -d sqlserver
+$env:ConnectionStrings__TestConnection="Server=localhost,1433;Database=master;User Id=sa;Password=Your_password123;Encrypt=False;TrustServerCertificate=True"
+dotnet test
+```
+
 A suite de testes cria uma base de dados única por execução e elimina-a no fim.
+
+## Pipeline de CI
+
+A pipeline de CI está definida em:
+
+```text
+../.github/workflows/ci.yml
+```
+
+A pipeline corre automaticamente quando há:
+
+- `push`
+- `pull_request`
+
+Também pode ser executada manualmente no GitHub:
+
+1. Abrir o repositório no GitHub.
+2. Ir a `Actions`.
+3. Escolher a workflow `CI`.
+4. Clicar em `Run workflow`.
+
+A pipeline executa os seguintes passos:
+
+- restaura os pacotes NuGet;
+- corre o linter de formatação com `dotnet format`;
+- faz type checking e análise estática através de `dotnet build`;
+- falha a build se existirem warnings do compilador ou dos analisadores;
+- corre os testes automatizados contra SQL Server;
+- confirma que a aplicação consegue ser publicada;
+- guarda os resultados dos testes como artefacto.
+
+As regras partilhadas da build estão em:
+
+```text
+Directory.Build.props
+```
+
+Este ficheiro ativa análise de código, regras de estilo em build e `TreatWarningsAsErrors`, para a CI bloquear código com warnings.
+
+Para reproduzir localmente a parte principal da CI:
+
+```powershell
+cd InternalTicketManager
+dotnet restore InternalTicketManager.sln
+dotnet format InternalTicketManager.sln --verify-no-changes --no-restore
+dotnet build InternalTicketManager.sln --configuration Release --no-restore
+dotnet test InternalTicketManager.sln --configuration Release --no-build
+dotnet publish src/TicketManager.Web/TicketManager.Web.csproj --configuration Release --no-build
+```
+
+Nota: para correr os testes localmente, é necessário ter SQL Server disponível e configurar `ConnectionStrings__TestConnection`, como descrito na secção de testes.
 
 ## Configurar SQL Server
 
@@ -99,13 +158,13 @@ docs/01-exercise.md
 Começar por:
 
 ```text
-docs/TASK-001-ticket-comments.md
+docs/exercises/tarefa-por-fazer.md
 ```
 
 Os participantes devem preencher primeiro:
 
 ```text
-docs/REQ-001-ticket-comments.md
+docs/specs/planned/FR6-comentarios-nos-tickets.md
 ```
 
 Só depois devem implementar:
@@ -135,4 +194,10 @@ Prompts da formação:
 
 ```text
 docs/03-prompts.md
+```
+
+Checklist do formador:
+
+```text
+docs/trainer/checklist.md
 ```

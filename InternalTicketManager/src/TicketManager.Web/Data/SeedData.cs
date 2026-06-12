@@ -2,8 +2,15 @@ using TicketManager.Web.Models;
 
 namespace TicketManager.Web.Data;
 
+/// <summary>
+/// Creates the initial demonstration tickets used by the training application.
+/// </summary>
 public static class SeedData
 {
+    /// <summary>
+    /// Adds sample tickets when the database does not contain any tickets yet.
+    /// </summary>
+    /// <param name="dbContext">Database context used to inspect and seed tickets.</param>
     public static void EnsureSeeded(AppDbContext dbContext)
     {
         if (dbContext.Tickets.Any())

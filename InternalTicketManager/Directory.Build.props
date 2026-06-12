@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <!-- Faz a build falhar quando existem warnings do compilador ou dos analisadores. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Aplica regras de estilo/análise durante a build, para a CI funcionar como linter. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+  </PropertyGroup>
+</Project>

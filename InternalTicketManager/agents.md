@@ -1,45 +1,102 @@
-# Instruções para agentes
+# Instructions for agents
 
-## Objetivo do projeto
+<!--
+Este ficheiro define o comportamento esperado por defeito para agentes de
+IA/codigo que trabalhem neste repositorio. Deve manter-se orientado ao produto,
+estavel e independente de qualquer contexto temporario de entrega.
+-->
 
-Este repositório é um projeto de formação. A aplicação base deve manter-se intencionalmente pequena para os participantes praticarem definição de requisitos, implementação, testes e documentação.
+## Project purpose
 
-## Âmbito da aplicação base
+<!--
+Comecar pelo objetivo do produto ajuda os agentes a perceberem para que serve
+o repositorio antes de proporem detalhes de implementacao.
+-->
 
-A aplicação base inclui:
+This repository contains a small internal ticket management application.
+The application should remain simple, predictable, and easy to maintain.
 
-- Lista de tickets
-- Criação de tickets
-- Detalhe de ticket
-- Edição de estado de ticket
-- Tickets de exemplo
+Treat the current product as a default starter app for managing internal support
+or operations tickets. Avoid assumptions tied to a specific company, team, or
+one-off scenario.
 
-A aplicação base não deve incluir comentários nos tickets. Os comentários são o exercício da formação.
+## Application scope
 
-## Fluxo do exercício
+<!--
+Definir explicitamente o limite atual do produto ajuda os agentes a evitarem
+adicionar funcionalidades grandes so porque sao comuns em sistemas de tickets.
+-->
 
-Quando for pedido para implementar comentários nos tickets:
+The core application supports:
 
-1. Ler `docs/01-exercise.md`.
-2. Começar por preencher `docs/REQ-001-ticket-comments.md`.
-3. Manter o requisito conciso e testável.
-4. Pedir ou produzir um plano técnico antes de escrever código.
-5. Implementar apenas a funcionalidade acordada de comentários nos tickets.
-6. Trabalhar em passos pequenos e fáceis de rever.
-7. Adicionar ou atualizar testes quando fizer sentido.
-8. Correr `dotnet build` e `dotnet test`.
-9. Rever o diff antes de aceitar alterações.
-10. Atualizar o `README.md` se o setup ou o comportamento mudarem.
+- Listing tickets
+- Creating tickets
+- Viewing ticket details
+- Updating ticket status
+- Working with seeded example tickets
 
-## Restrições
+Keep new functionality aligned with this scope unless the requested change
+clearly expands it. Prefer practical ticket-management behavior over generic
+platform features.
 
-Não adicionar utilizadores, autenticação, autorização, categorias, anexos, notificações ou dashboard, exceto se o formador alterar explicitamente o âmbito.
+## Working guidelines
 
-## Documentos da formação
+<!--
+Estas regras orientam como os agentes devem fazer alteracoes: analisar primeiro,
+manter alteracoes pequenas, preservar o estilo existente e validar o
+comportamento com testes/builds.
+-->
 
-- `docs/00-training-flow.md`: fluxo completo da sessão.
-- `docs/01-exercise.md`: exercício para participantes.
-- `docs/TASK-001-ticket-comments.md`: pedido de negócio vago.
-- `docs/REQ-001-ticket-comments.md`: template de requisito para participantes.
-- `docs/02-expected-requirement.md`: referência do formador.
-- `docs/03-prompts.md`: prompts para o exercício.
+When making changes:
+
+1. Read the relevant source, tests, and documentation before editing.
+2. Keep requirements and behavior explicit, concise, and testable.
+3. Prefer small, reviewable changes over broad rewrites.
+4. Follow the existing project structure, naming, and coding style.
+5. Update or add tests when behavior changes.
+6. Run `dotnet build` and `dotnet test` when the change affects code.
+7. Update `README.md` or other documentation when setup, usage, or behavior
+   changes.
+
+## Product constraints
+
+<!--
+As restricoes estao descritas pela negativa porque estas funcionalidades
+aumentariam bastante a complexidade da app e devem exigir aprovacao explicita.
+-->
+
+Do not add users, authentication, authorization, categories, attachments,
+notifications, dashboards, external integrations, or workflow automation unless
+the user explicitly requests them.
+
+If a requested feature could grow beyond the current scope, implement the
+smallest useful version first and document any important assumptions.
+
+## Documentation
+
+<!--
+A documentacao deve descrever o produto como ele existe. Os agentes devem usar
+os documentos como contexto, mas o codigo fonte e o pedido do utilizador
+continuam a ser a referencia para decisoes de implementacao.
+-->
+
+Use project documentation as supporting context, but validate requested behavior
+against the current application scope before implementing it.
+
+When adding product-facing documentation, write it as documentation for the
+application itself.
+
+Use XML documentation comments for public domain classes, enums, controller
+actions, and data access types. Keep comments concise and useful; avoid
+comments that only repeat the member name.
+
+When adding public API endpoints, document them with `<summary>`, `<param>`,
+`<returns>`, and response metadata where useful.
+
+Generate the code documentation with:
+
+```powershell
+.\docs\generate-docs.ps1 -Open
+```
+
+Detailed rules are in `docs/documentation-standard.md`.

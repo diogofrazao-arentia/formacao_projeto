@@ -33,6 +33,9 @@ app.MapControllerRoute(
 
 app.Run();
 
+/// <summary>
+/// Entry point marker used by integration tests to locate the web application.
+/// </summary>
 public partial class Program
 {
 }
