@@ -1,6 +1,6 @@
 # Specs funcionais por FR
 
-Este diretório organiza as especificações funcionais por requisito (FR), com um ficheiro por funcionalidade.
+Este diretorio organiza as especificacoes funcionais por requisito (FR), com um ficheiro por funcionalidade.
 
 ## Implementadas
 
@@ -12,4 +12,8 @@ Este diretório organiza as especificações funcionais por requisito (FR), com 
 
 ## Planeadas
 
-- FR6: Comentários nos tickets (`planned/FR6-comentarios-nos-tickets.md`)
+- FR6: Comentarios nos tickets (`planned/FR6-comentarios-nos-tickets.md`)
+
+## Fluxo de trabalho
+
+Antes de implementar uma spec, seguir `../00-training-flow.md`.
