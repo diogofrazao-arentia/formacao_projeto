@@ -41,7 +41,27 @@ Nao implementado:
 
 ## Executar
 
-A partir da raiz do repositorio:
+Opcao recomendada em Windows (arranque rapido sem LocalDB):
+
+```powershell
+cd InternalTicketManager
+.\scripts\start-app.ps1
+```
+
+Se a porta 5127 estiver ocupada:
+
+```powershell
+.\scripts\start-app.ps1 -Port 5130
+```
+
+Alternativa equivalente com duplo clique ou terminal:
+
+```powershell
+cd InternalTicketManager
+.\start-app.cmd
+```
+
+Arranque manual (se tiveres LocalDB ou outra instancia SQL Server configurada):
 
 ```powershell
 cd InternalTicketManager
