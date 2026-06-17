@@ -1,6 +1,6 @@
 name: CI
 
-# A pipeline corre em pushes, pull requests e também pode ser executada manualmente.
+# A pipeline corre em pushes, pull requests e tambem pode ser executada manualmente.
 on:
   push:
   pull_request:
@@ -10,7 +10,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    # Os testes de integração precisam de uma instância de SQL Server disponível.
+    # Os testes de integracao precisam de uma instancia de SQL Server disponivel.
     services:
       sqlserver:
         image: mcr.microsoft.com/mssql/server:2022-latest
@@ -20,11 +20,7 @@ jobs:
         ports:
           - 1433:1433
 
-    defaults:
-      run:
-        working-directory: InternalTicketManager
-
-    # Connection string usada pelos testes para criarem uma base de dados temporária.
+    # Connection string usada pelos testes para criarem uma base de dados temporaria.
     env:
       ConnectionStrings__TestConnection: Server=localhost,1433;Database=master;User Id=sa;Password=Your_password123;Encrypt=False;TrustServerCertificate=True
 
@@ -32,21 +28,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Instala o SDK de .NET 8 usado pela aplicação e pelos testes.
+      # Instala o SDK de .NET 8 usado pela aplicacao e pelos testes.
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      # Restaura os pacotes NuGet da solução.
+      # Restaura os pacotes NuGet da solucao.
       - name: Restore
         run: dotnet restore InternalTicketManager.sln
 
-      # Linter de formatação: garante que o código está formatado segundo as regras do dotnet format.
+      # Linter de formatacao: garante que o codigo esta formatado segundo as regras do dotnet format.
       - name: Format check
         run: dotnet format InternalTicketManager.sln --verify-no-changes --no-restore
 
-      # Type checking e análise estática: compila a solução em Release e falha em warnings.
+      # Type checking e analise estatica: compila a solucao em Release e falha em warnings.
       - name: Build
         run: dotnet build InternalTicketManager.sln --configuration Release --no-restore
 
@@ -58,7 +54,7 @@ jobs:
         shell: pwsh
         run: ./docs/generate-docs.ps1 -Configuration Release
 
-      # Confirma que a aplicação consegue ser publicada.
+      # Confirma que a aplicacao consegue ser publicada.
       - name: Publish
         run: dotnet publish src/TicketManager.Web/TicketManager.Web.csproj --configuration Release --no-build
 
@@ -68,4 +64,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: InternalTicketManager/**/test-results.trx
+          path: '**/test-results.trx'

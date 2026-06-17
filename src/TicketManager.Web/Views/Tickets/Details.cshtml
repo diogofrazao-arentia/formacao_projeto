@@ -1,0 +1,30 @@
+@model Ticket
+
+@{
+    ViewData["Title"] = "Detalhe do ticket";
+}
+
+<section class="page-heading">
+    <div>
+        <h1>@Model.Title</h1>
+        <p>Ticket n.º @Model.Id</p>
+    </div>
+    <a class="button" asp-action="Edit" asp-route-id="@Model.Id">Editar estado</a>
+</section>
+
+<dl class="details-list">
+    <dt>Prioridade</dt>
+    <dd><span class="badge priority-@Model.Priority.ToString().ToLowerInvariant()">@Model.Priority.ToDisplayName()</span></dd>
+
+    <dt>Estado</dt>
+    <dd><span class="badge status-@Model.Status.ToString().ToLowerInvariant()">@Model.Status.ToDisplayName()</span></dd>
+
+    <dt>Criado em</dt>
+    <dd>@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+
+    <dt>Descricao</dt>
+    <dd>@Model.Description</dd>
+</dl>
+<div class="form-actions">
+    <a class="button button-secondary" asp-action="Index">Voltar a lista</a>
+</div>
