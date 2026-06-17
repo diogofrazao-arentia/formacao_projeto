@@ -1,0 +1,33 @@
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+TestResults/
+coverage/
+*.coverage
+*.trx
+*.opencover.xml
+*.cobertura.xml
+*.db
+*.mdf
+*.ldf
+*.log
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Local publish/output folders
+artifacts/
+publish/
+dist/
+out/
+
+# OS files
+Thumbs.db
+Desktop.ini

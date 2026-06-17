@@ -57,6 +57,8 @@ When making changes:
 6. Run `dotnet build` and `dotnet test` when the change affects code.
 7. Update `README.md` or other documentation when setup, usage, or behavior
    changes.
+8. Follow the commit-message convention documented in
+   `docs/commit-messages.md`.
 
 ## Product constraints
 
