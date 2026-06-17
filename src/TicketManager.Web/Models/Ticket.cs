@@ -52,8 +52,4 @@ public class Ticket
     [Display(Name = "Criado em")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    /// <summary>
-    /// Follow-up comments recorded while the ticket is being handled.
-    /// </summary>
-    public ICollection<TicketComment> Comments { get; } = new List<TicketComment>();
 }

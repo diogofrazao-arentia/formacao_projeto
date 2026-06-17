@@ -103,4 +103,5 @@ comentarios simples, visiveis no detalhe do ticket.
 7. Cobrir validacoes e fluxo HTTP nos testes.
 8. Atualizar README e correr build/testes.
 
-Estado atual: funcionalidade implementada no ambito desta spec.
+Estado atual: funcionalidade planeada para formacao e ainda nao implementada
+na aplicacao base.

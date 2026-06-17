@@ -4,7 +4,7 @@
 | --- | --- |
 | Nome da funcionalidade | Criar tickets de exemplo |
 | Estado | Implementada |
-| Objetivo | Garantir que a aplicação de formação tem dados visíveis logo no primeiro arranque. |
+| Objetivo | Garantir que a aplicação tem dados visíveis logo no primeiro arranque. |
 | Rotas envolvidas | Nao aplicavel diretamente. A funcionalidade ocorre no arranque da aplicacao. |
 | Comportamento esperado | Quando a aplicacao arranca e a base de dados nao contem tickets, sao criados 5 tickets de exemplo com prioridades, estados e datas diferentes. |
 | Dados envolvidos | 5 registos `Ticket` com `Title`, `Description`, `Priority`, `Status` e `CreatedAt`. |
