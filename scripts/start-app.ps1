@@ -7,18 +7,10 @@ $ErrorActionPreference = "Stop"
 
 Set-Location (Join-Path $PSScriptRoot "..")
 
-if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-    throw "Docker CLI was not found. Install Docker Desktop and try again."
-}
-
-$connectionString = "Server=localhost,1433;Database=InternalTicketManager;User Id=sa;Password=Your_password123;Encrypt=False;TrustServerCertificate=True"
 $url = "http://localhost:$Port"
 
-Write-Host "Starting SQL Server container..."
-docker compose up -d sqlserver | Out-Host
-
-Write-Host "Using SQL Server connection for this session..."
-$env:ConnectionStrings__DefaultConnection = $connectionString
+Write-Host "Using SQLite database for this session..."
+$env:ConnectionStrings__DefaultConnection = "Data Source=InternalTicketManager.db"
 $env:ASPNETCORE_URLS = $url
 $env:ASPNETCORE_ENVIRONMENT = "Development"
 

@@ -235,7 +235,7 @@ public sealed class TicketsIntegrationTests : IClassFixture<TicketManagerWebAppl
     private AppDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer(factory.ConnectionString)
+            .UseSqlite(factory.ConnectionString)
             .Options;
 
         return new AppDbContext(options);

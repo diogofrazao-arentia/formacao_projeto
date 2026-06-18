@@ -46,7 +46,7 @@ listar, criar, consultar e atualizar tickets de suporte ou operacoes internas.
 ## Requisitos
 
 - .NET 8 SDK
-- SQL Server LocalDB ou outra instancia de SQL Server
+- SQLite e usado pela aplicacao atraves do provider Entity Framework Core
 
 ## Como usar
 
@@ -77,20 +77,15 @@ Se a porta predefinida estiver ocupada:
 A aplicacao cria a base de dados automaticamente e inicializa tickets de
 exemplo quando a base de dados esta vazia.
 
+Por predefinicao, a base de dados local usa o ficheiro `InternalTicketManager.db`.
+
 ## Testes
 
-Os testes de integracao usam SQL Server. Definir a connection string de teste
-com `ConnectionStrings__TestConnection`.
+Os testes de integracao usam uma base SQLite temporaria e isolada por execucao.
+Nao e necessario configurar SQL Server, Docker ou uma connection string externa.
 
 ```powershell
-$env:ConnectionStrings__TestConnection="Server=localhost,1433;Database=master;User Id=sa;Password=Your_password123;Encrypt=False;TrustServerCertificate=True"
 dotnet test InternalTicketManager.sln
-```
-
-Tambem existe um SQL Server de apoio em `docker-compose.yml`:
-
-```powershell
-docker compose up -d sqlserver
 ```
 
 ## Documentacao e especificacoes

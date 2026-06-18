@@ -96,14 +96,6 @@ dotnet build InternalTicketManager.sln --configuration Release
 dotnet test InternalTicketManager.sln --configuration Release
 ```
 
-Se os testes precisarem de SQL Server via Docker:
-
-```powershell
-docker compose up -d sqlserver
-$env:ConnectionStrings__TestConnection="Server=localhost,1433;Database=master;User Id=sa;Password=Your_password123;Encrypt=False;TrustServerCertificate=True"
-dotnet test InternalTicketManager.sln --configuration Release
-```
-
 Tambem fazer teste manual no browser quando houver alteracoes de UI.
 
 ## 7. Atualizar docs

@@ -4,7 +4,6 @@
 
 - Abrir o projeto a partir de `InternalTicketManager`.
 - Confirmar que o .NET 8 SDK esta instalado.
-- Confirmar que existe SQL Server LocalDB ou Docker disponivel para os testes.
 - Correr `dotnet restore InternalTicketManager.sln`.
 - Correr `dotnet run --project src/TicketManager.Web`.
 - Validar que a lista de tickets abre e mostra dados de exemplo.
@@ -39,13 +38,5 @@ Sequencia esperada:
 
 ```powershell
 dotnet build InternalTicketManager.sln --configuration Release
-dotnet test InternalTicketManager.sln --configuration Release
-```
-
-Se os testes precisarem de SQL Server via Docker:
-
-```powershell
-docker compose up -d sqlserver
-$env:ConnectionStrings__TestConnection="Server=localhost,1433;Database=master;User Id=sa;Password=Your_password123;Encrypt=False;TrustServerCertificate=True"
 dotnet test InternalTicketManager.sln --configuration Release
 ```
