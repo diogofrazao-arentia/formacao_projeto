@@ -28,6 +28,9 @@ publish/
 dist/
 out/
 
+# Training materials used only locally
+docs/trainer/
+
 # OS files
 Thumbs.db
 Desktop.ini
