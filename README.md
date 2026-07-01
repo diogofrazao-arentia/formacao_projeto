@@ -96,7 +96,8 @@ Se alguma verificacao falhar, o commit e interrompido para corrigir o codigo.
 ## Documentacao e especificacoes
 
 - Requisitos e specs funcionais: `docs/specs/`
-- Fluxo de trabalho da formacao: `docs/00-training-flow.md`
+- Visao geral das especificacoes: `docs/specs/README.md`
+- Fluxo de trabalho da formacao: `docs/exercises/00-training-flow.md`
 - Standard de documentacao tecnica: `docs/documentation-standard.md`
 - Guia de mensagens de commit: `docs/commit-messages.md`
 
