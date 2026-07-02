@@ -1,1 +1,0 @@
-# Igual ao AGENTS.md mas específico para o github copilot

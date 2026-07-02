@@ -51,5 +51,4 @@ public class Ticket
     /// </summary>
     [Display(Name = "Criado em")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
 }

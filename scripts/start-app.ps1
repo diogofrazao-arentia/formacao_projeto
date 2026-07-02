@@ -8,8 +8,15 @@ $ErrorActionPreference = "Stop"
 Set-Location (Join-Path $PSScriptRoot "..")
 
 $url = "http://localhost:$Port"
+$databasePaths = @(
+    (Join-Path (Get-Location) "InternalTicketManager.db"),
+    (Join-Path (Get-Location) "src/TicketManager.Web/InternalTicketManager.db")
+)
 
 Write-Host "Using SQLite database for this session..."
+foreach ($databasePath in $databasePaths) {
+    Remove-Item $databasePath, "$databasePath-wal", "$databasePath-shm" -ErrorAction SilentlyContinue
+}
 $env:ConnectionStrings__DefaultConnection = "Data Source=InternalTicketManager.db"
 $env:ASPNETCORE_URLS = $url
 $env:ASPNETCORE_ENVIRONMENT = "Development"

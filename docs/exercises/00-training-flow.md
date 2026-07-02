@@ -27,13 +27,13 @@ Antes de pedir implementacao, escrever ou completar a spec funcional.
 Para o exercicio principal, partir do pedido vago em:
 
 ```text
-docs/exercises/tarefa-por-fazer.md
+docs/specs/planned/
 ```
 
-Depois completar a spec em:
+Depois criar ou completar a spec planeada correspondente em:
 
 ```text
-docs/specs/planned/FR6-comentarios-nos-tickets.md
+docs/specs/planned/
 ```
 
 A spec deve deixar claro:

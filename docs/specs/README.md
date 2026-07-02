@@ -31,8 +31,6 @@ dashboards, integracoes externas ou automacoes sem pedido explicito.
 
 ## Planeadas
 
-- FR6: Comentarios nos tickets (`planned/FR6-comentarios-nos-tickets.md`)
-
 ## Fluxo de trabalho
 
 1. Criar ou atualizar a spec em `planned/`.

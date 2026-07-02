@@ -31,7 +31,7 @@ public sealed class TicketManagerWebApplicationFactory : WebApplicationFactory<P
 
         await using var dbContext = new AppDbContext(options);
         await dbContext.Database.EnsureDeletedAsync();
-        await dbContext.Database.EnsureCreatedAsync();
+        await dbContext.Database.MigrateAsync();
         SeedData.EnsureSeeded(dbContext);
     }
 

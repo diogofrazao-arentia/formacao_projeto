@@ -1,104 +1,48 @@
-# Instructions for agents
+# AGENTS.md
 
-<!--
-Este ficheiro define o comportamento esperado por defeito para agentes de
-IA/codigo que trabalhem neste repositorio. Deve manter-se orientado ao produto,
-estavel e independente de qualquer contexto temporario de entrega.
--->
+## Project Snapshot
 
-## Project purpose
+Internal Ticket Manager is a small ASP.NET Core MVC app on .NET 8 with one solution, one web project, and one test project. The app uses SQLite locally and creates its schema and seed data on startup.
 
-<!--
-Comecar pelo objetivo do produto ajuda os agentes a perceberem para que serve
-o repositorio antes de proporem detalhes de implementacao.
--->
+## Scope
 
-This repository contains a small internal ticket management application.
-The application should remain simple, predictable, and easy to maintain.
+Keep changes aligned with the current ticket-management scope. Avoid adding users, authentication, authorization, categories, attachments, notifications, dashboards, external integrations, or workflow automation unless the user explicitly asks for them.
 
-Treat the current product as a default starter app for managing internal support
-or operations tickets. Avoid assumptions tied to a specific company, team, or
-one-off scenario.
+## Working Rules
 
-## Application scope
+- Read the relevant source, tests, and docs before editing.
+- Prefer the smallest change that matches the current functional spec.
+- For feature work, check [docs/specs/README.md](docs/specs/README.md) first, then update the relevant spec in `planned/` or `implemented/`.
+- Keep changes small, reviewable, and consistent with the existing project structure and naming.
+- Update or add tests when behavior changes.
+- Link to existing documentation instead of repeating it. Keep this file as the quick-start guide for agents.
+- Use the repo docs for standards and conventions: [README.md](README.md), [docs/documentation-standard.md](docs/documentation-standard.md), [docs/commit-messages.md](docs/commit-messages.md), and [docs/exercises/00-training-flow.md](docs/exercises/00-training-flow.md).
 
-<!--
-Definir explicitamente o limite atual do produto ajuda os agentes a evitarem
-adicionar funcionalidades grandes so porque sao comuns em sistemas de tickets.
--->
+## Commands
 
-The core application supports:
+- Restore: `dotnet restore InternalTicketManager.sln`
+- Format check: `dotnet format InternalTicketManager.sln --verify-no-changes`
+- Build: `dotnet build InternalTicketManager.sln`
+- Test: `dotnet test InternalTicketManager.sln`
+- Run locally: `./scripts/start-app.ps1`
+- Run on a different port: `./scripts/start-app.ps1 -Port 5130`
+- Generate docs: `./docs/generate-docs.ps1 -Open`
+- Install Git hooks: `./scripts/install-git-hooks.ps1`
 
-- Listing tickets
-- Creating tickets
-- Viewing ticket details
-- Updating ticket status
-- Working with seeded example tickets
+## Code Conventions
 
-Keep new functionality aligned with this scope unless the requested change
-clearly expands it. Prefer practical ticket-management behavior over generic
-platform features.
+- Public types, controllers, controller actions, and public properties should have XML documentation comments.
+- Prefer async MVC actions and constructor injection with private readonly fields.
+- Use data annotations for validation, with Portuguese user-facing messages where applicable.
+- Keep antiforgery protection on POST actions and account for it in tests.
+- EF Core maps ticket enums as strings; the database schema is managed with EF Core migrations.
 
-## Working guidelines
+## Testing Notes
 
-<!--
-Estas regras orientam como os agentes devem fazer alteracoes: analisar primeiro,
-manter alteracoes pequenas, preservar o estilo existente e validar o
-comportamento com testes/builds.
--->
+- Integration tests use `WebApplicationFactory` and isolated SQLite databases per run.
+- POST tests often need antiforgery token extraction from HTML.
+- Treat warnings seriously: the build is configured to fail on warnings.
 
-When making changes:
+## Commit Style
 
-1. Read the relevant source, tests, and documentation before editing.
-2. Keep requirements and behavior explicit, concise, and testable.
-3. Prefer small, reviewable changes over broad rewrites.
-4. Follow the existing project structure, naming, and coding style.
-5. Update or add tests when behavior changes.
-6. Run `dotnet build` and `dotnet test` when the change affects code.
-7. Update `README.md` or other documentation when setup, usage, or behavior
-   changes.
-8. Follow the commit-message convention documented in
-   `docs/commit-messages.md`.
-
-## Product constraints
-
-<!--
-As restricoes estao descritas pela negativa porque estas funcionalidades
-aumentariam bastante a complexidade da app e devem exigir aprovacao explicita.
--->
-
-Do not add users, authentication, authorization, categories, attachments,
-notifications, dashboards, external integrations, or workflow automation unless
-the user explicitly requests them.
-
-If a requested feature could grow beyond the current scope, implement the
-smallest useful version first and document any important assumptions.
-
-## Documentation
-
-<!--
-A documentacao deve descrever o produto como ele existe. Os agentes devem usar
-os documentos como contexto, mas o codigo fonte e o pedido do utilizador
-continuam a ser a referencia para decisoes de implementacao.
--->
-
-Use project documentation as supporting context, but validate requested behavior
-against the current application scope before implementing it.
-
-When adding product-facing documentation, write it as documentation for the
-application itself.
-
-Use XML documentation comments for public domain classes, enums, controller
-actions, and data access types. Keep comments concise and useful; avoid
-comments that only repeat the member name.
-
-When adding public API endpoints, document them with `<summary>`, `<param>`,
-`<returns>`, and response metadata where useful.
-
-Generate the code documentation with:
-
-```powershell
-.\docs\generate-docs.ps1 -Open
-```
-
-Detailed rules are in `docs/documentation-standard.md`.
+Use Conventional Commits. See [docs/commit-messages.md](docs/commit-messages.md) for the accepted types and examples.
