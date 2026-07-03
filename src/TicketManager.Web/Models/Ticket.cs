@@ -51,4 +51,9 @@ public class Ticket
     /// </summary>
     [Display(Name = "Criado em")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Comments added to this ticket in chronological order.
+    /// </summary>
+    public List<TicketComment> Comments { get; set; } = [];
 }
