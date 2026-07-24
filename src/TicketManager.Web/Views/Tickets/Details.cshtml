@@ -1,4 +1,4 @@
-@model Ticket
+@model TicketDetailsViewModel
 
 @{
     ViewData["Title"] = "Detalhe do ticket";
@@ -6,25 +6,69 @@
 
 <section class="page-heading">
     <div>
-        <h1>@Model.Title</h1>
-        <p>Ticket n.º @Model.Id</p>
+        <h1>@Model.Ticket.Title</h1>
+        <p>Ticket n.º @Model.Ticket.Id</p>
     </div>
-    <a class="button" asp-action="Edit" asp-route-id="@Model.Id">Editar estado</a>
+    <a class="button" asp-action="Edit" asp-route-id="@Model.Ticket.Id">Editar estado</a>
 </section>
 
 <dl class="details-list">
     <dt>Prioridade</dt>
-    <dd><span class="badge priority-@Model.Priority.ToString().ToLowerInvariant()">@Model.Priority.ToDisplayName()</span></dd>
+    <dd><span class="badge priority-@Model.Ticket.Priority.ToString().ToLowerInvariant()">@Model.Ticket.Priority.ToDisplayName()</span></dd>
 
     <dt>Estado</dt>
-    <dd><span class="badge status-@Model.Status.ToString().ToLowerInvariant()">@Model.Status.ToDisplayName()</span></dd>
+    <dd><span class="badge status-@Model.Ticket.Status.ToString().ToLowerInvariant()">@Model.Ticket.Status.ToDisplayName()</span></dd>
 
     <dt>Criado em</dt>
-    <dd>@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+    <dd>@Model.Ticket.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
 
     <dt>Descricao</dt>
-    <dd>@Model.Description</dd>
+    <dd>@Model.Ticket.Description</dd>
 </dl>
+
+<section class="comments-section">
+    <h2>Comentarios</h2>
+
+    @if (Model.Comments.Count == 0)
+    {
+        <p class="empty-state">Ainda nao existem comentarios.</p>
+    }
+    else
+    {
+        <ul class="comments-list">
+            @foreach (var comment in Model.Comments)
+            {
+                <li class="comment-item">
+                    <div class="comment-meta">
+                        <strong>@comment.AuthorName</strong>
+                        <span>@comment.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+                    </div>
+                    <p>@comment.Content</p>
+                </li>
+            }
+        </ul>
+    }
+
+    <form asp-action="CreateComment" asp-route-id="@Model.Ticket.Id" method="post" class="form comments-form">
+        <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+        <div class="field">
+            <label asp-for="NewComment.AuthorName"></label>
+            <input asp-for="NewComment.AuthorName" />
+            <span asp-validation-for="NewComment.AuthorName" class="validation-message"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="NewComment.Content"></label>
+            <textarea asp-for="NewComment.Content" rows="5"></textarea>
+            <span asp-validation-for="NewComment.Content" class="validation-message"></span>
+        </div>
+
+        <div class="form-actions">
+            <button class="button" type="submit">Comentar</button>
+        </div>
+    </form>
+</section>
 
 <div class="form-actions">
     <a class="button button-secondary" asp-action="Index">Voltar a lista</a>

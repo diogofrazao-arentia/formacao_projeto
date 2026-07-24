@@ -76,14 +76,50 @@ public class TicketsController : Controller
     /// <returns>The ticket details page, or a not found response when the ticket does not exist.</returns>
     public async Task<IActionResult> Details(int id)
     {
-        var ticket = await dbContext.Tickets.FindAsync(id);
-
-        if (ticket is null)
+        var model = await BuildTicketDetailsViewModelAsync(id);
+        if (model is null)
         {
             return NotFound();
         }
 
-        return View(ticket);
+        return View(model);
+    }
+
+    /// <summary>
+    /// Validates and persists a new comment for the ticket details timeline.
+    /// </summary>
+    /// <param name="id">Identifier of the ticket that receives the comment.</param>
+    /// <param name="model">Details page model containing the new comment fields.</param>
+    /// <returns>The validation page when invalid, or the details page for the updated ticket.</returns>
+    [HttpPost("Tickets/{id}/Comments")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateComment(int id, TicketDetailsViewModel model)
+    {
+        var ticketExists = await dbContext.Tickets.AnyAsync(ticket => ticket.Id == id);
+        if (!ticketExists)
+        {
+            return NotFound();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var invalidModel = await BuildTicketDetailsViewModelAsync(id, model.NewComment);
+            if (invalidModel is null)
+            {
+                return NotFound();
+            }
+
+            return View(nameof(Details), invalidModel);
+        }
+
+        var comment = model.NewComment;
+        comment.TicketId = id;
+        comment.CreatedAt = DateTime.UtcNow;
+
+        dbContext.TicketComments.Add(comment);
+        await dbContext.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Details), new { id });
     }
 
     /// <summary>
@@ -143,5 +179,26 @@ public class TicketsController : Controller
         ViewBag.StatusOptions = Enum.GetValues<TicketStatus>()
             .Select(status => new SelectListItem(status.ToDisplayName(), status.ToString(), status == selected))
             .ToList();
+    }
+
+    private async Task<TicketDetailsViewModel?> BuildTicketDetailsViewModelAsync(int id, TicketComment? newComment = null)
+    {
+        var ticket = await dbContext.Tickets.FindAsync(id);
+        if (ticket is null)
+        {
+            return null;
+        }
+
+        var comments = await dbContext.TicketComments
+            .Where(comment => comment.TicketId == id)
+            .OrderBy(comment => comment.CreatedAt)
+            .ToListAsync();
+
+        return new TicketDetailsViewModel
+        {
+            Ticket = ticket,
+            Comments = comments,
+            NewComment = newComment ?? new TicketComment()
+        };
     }
 }

@@ -171,6 +171,145 @@ public sealed class TicketsIntegrationTests : IClassFixture<TicketManagerWebAppl
     }
 
     [Fact]
+    public async Task Details_WithoutComments_ShowsEmptyCommentsState()
+    {
+        var ticket = await CreateTicketAsync(
+            "Ticket sem comentarios",
+            "Este ticket e usado para validar o estado vazio de comentarios.",
+            TicketPriority.Low,
+            TicketStatus.Open,
+            DateTime.UtcNow);
+
+        var response = await client.GetAsync($"/Tickets/Details/{ticket.Id}");
+
+        await EnsureSuccessAsync(response);
+        var body = await ReadDecodedBodyAsync(response);
+        Assert.Contains("Ainda nao existem comentarios.", body);
+    }
+
+    [Fact]
+    public async Task Details_WithComments_DisplaysCommentsInChronologicalOrder()
+    {
+        var ticket = await CreateTicketAsync(
+            "Ticket com comentarios",
+            "Este ticket verifica a ordenacao cronologica dos comentarios.",
+            TicketPriority.Medium,
+            TicketStatus.InProgress,
+            DateTime.UtcNow.AddHours(-1));
+
+        var oldestComment = await CreateCommentAsync(ticket.Id, "Ana", "Comentario antigo com pelo menos dez caracteres.", DateTime.UtcNow.AddMinutes(-30));
+        var newestComment = await CreateCommentAsync(ticket.Id, "Bruno", "Comentario mais recente com texto suficiente.", DateTime.UtcNow.AddMinutes(-10));
+
+        var response = await client.GetAsync($"/Tickets/Details/{ticket.Id}");
+
+        await EnsureSuccessAsync(response);
+        var body = await ReadDecodedBodyAsync(response);
+        Assert.Contains(oldestComment.AuthorName, body);
+        Assert.Contains(newestComment.AuthorName, body);
+        Assert.True(
+            body.IndexOf(oldestComment.Content, StringComparison.Ordinal) <
+            body.IndexOf(newestComment.Content, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task CreateComment_Post_WithValidData_CreatesCommentAndRedirectsToDetails()
+    {
+        var ticket = await CreateTicketAsync(
+            "Ticket para criar comentario",
+            "Ticket usado para testar o post de comentarios.",
+            TicketPriority.High,
+            TicketStatus.Open,
+            DateTime.UtcNow);
+
+        var token = await GetAntiforgeryTokenAsync($"/Tickets/Details/{ticket.Id}");
+
+        var response = await client.PostAsync($"/Tickets/{ticket.Id}/Comments", FormContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["NewComment.AuthorName"] = "Carla",
+            ["NewComment.Content"] = "Comentario valido para validar o fluxo de criacao."
+        }));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal($"/Tickets/Details/{ticket.Id}", response.Headers.Location?.OriginalString);
+
+        await using var dbContext = CreateDbContext();
+        var comment = await dbContext.TicketComments.SingleAsync(c => c.TicketId == ticket.Id && c.AuthorName == "Carla");
+        Assert.Equal("Comentario valido para validar o fluxo de criacao.", comment.Content);
+    }
+
+    [Fact]
+    public async Task CreateComment_Post_WithoutAntiforgeryToken_ReturnsBadRequestAndDoesNotCreateComment()
+    {
+        var ticket = await CreateTicketAsync(
+            "Ticket sem token",
+            "Ticket usado para validar antiforgery em comentarios.",
+            TicketPriority.Medium,
+            TicketStatus.Open,
+            DateTime.UtcNow);
+
+        await using var dbContextBefore = CreateDbContext();
+        var beforeCount = await dbContextBefore.TicketComments.CountAsync();
+
+        var response = await client.PostAsync($"/Tickets/{ticket.Id}/Comments", FormContent(new Dictionary<string, string>
+        {
+            ["NewComment.AuthorName"] = "Daniel",
+            ["NewComment.Content"] = "Comentario sem token antiforgery para falhar."
+        }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        await using var dbContextAfter = CreateDbContext();
+        Assert.Equal(beforeCount, await dbContextAfter.TicketComments.CountAsync());
+    }
+
+    [Fact]
+    public async Task CreateComment_Post_WithInvalidData_ReturnsValidationErrorsAndDoesNotCreateComment()
+    {
+        var ticket = await CreateTicketAsync(
+            "Ticket com validacao",
+            "Ticket para validar erros de formulario de comentarios.",
+            TicketPriority.Low,
+            TicketStatus.Open,
+            DateTime.UtcNow);
+
+        var token = await GetAntiforgeryTokenAsync($"/Tickets/Details/{ticket.Id}");
+
+        await using var dbContextBefore = CreateDbContext();
+        var beforeCount = await dbContextBefore.TicketComments.CountAsync();
+
+        var response = await client.PostAsync($"/Tickets/{ticket.Id}/Comments", FormContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["NewComment.AuthorName"] = string.Empty,
+            ["NewComment.Content"] = "curto"
+        }));
+
+        await EnsureSuccessAsync(response);
+        var body = await ReadDecodedBodyAsync(response);
+        Assert.Contains("O nome e obrigatorio.", body);
+        Assert.Contains("O comentario deve ter entre 10 e 1000 caracteres.", body);
+
+        await using var dbContextAfter = CreateDbContext();
+        Assert.Equal(beforeCount, await dbContextAfter.TicketComments.CountAsync());
+    }
+
+    [Fact]
+    public async Task CreateComment_Post_WithMissingTicket_ReturnsNotFound()
+    {
+        var token = await GetAntiforgeryTokenAsync("/Tickets/Create");
+
+        var response = await client.PostAsync("/Tickets/999999/Comments", FormContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = token,
+            ["NewComment.AuthorName"] = "Eva",
+            ["NewComment.Content"] = "Comentario para um ticket inexistente."
+        }));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Edit_Get_WithExistingTicket_ReturnsSuccess()
     {
         var ticket = await GetSeedTicketAsync();
@@ -230,6 +369,26 @@ public sealed class TicketsIntegrationTests : IClassFixture<TicketManagerWebAppl
         dbContext.Tickets.Add(ticket);
         await dbContext.SaveChangesAsync();
         return ticket;
+    }
+
+    private async Task<TicketComment> CreateCommentAsync(
+        int ticketId,
+        string authorName,
+        string content,
+        DateTime createdAt)
+    {
+        await using var dbContext = CreateDbContext();
+        var comment = new TicketComment
+        {
+            TicketId = ticketId,
+            AuthorName = authorName,
+            Content = content,
+            CreatedAt = createdAt
+        };
+
+        dbContext.TicketComments.Add(comment);
+        await dbContext.SaveChangesAsync();
+        return comment;
     }
 
     private AppDbContext CreateDbContext()
